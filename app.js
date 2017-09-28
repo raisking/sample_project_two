@@ -6,22 +6,24 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
 var mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI);
+// const methodOverride = require('method-override')
 
-const db = mongoose.connection;
+// Database Set-up
+mongoose.Promise = global.Promise
+mongoose.connect(process.env.MONGODB_URI, {useMongoClient: true});
+
+const db = mongoose.connection
 db.on('error', (error) => {
   console.log(error)
 })
-db.once('open', ()=>{
-  console.log('Connected to MongoDB')
+db.once('open', () => {
+  console.log('Connected to MongoDB!')
 })
 
-var index = require('./routes/index');
-var users = require('./routes/users');
-
 var app = express();
+
+// app.use(methodOverride('_method'))
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -35,18 +37,25 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', index);
-app.use('/users', users);
+// Register Controllers
+var indexController = require('./routes/indexController');
+app.use('/', indexController);
+
+const companyController = require('./routes/companyController')
+app.use('/companies', companyController)
+
+const snowboardController = require('./routes/snowboardController')
+app.use('/companies/:companyId/snowboards', snowboardController)
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
