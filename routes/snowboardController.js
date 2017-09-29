@@ -1,6 +1,5 @@
-const express = require('express')
-const router = express.Router({ mergeParams: true })
-
+const express = require('express');
+const router = express.Router({ mergeParams: true });
 const Schema = require("../db/schema.js");
 const CompanyModel = Schema.CompanyModel;
 
